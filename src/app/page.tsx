@@ -64,7 +64,7 @@ export default function Home() {
           </div>
         </form>
       </div>
-      <Link href="https://github.com/markusleh/dashpod#readme">
+      <Link href="https://github.com/dashpod-app/dashpod#readme">
         <Button
           className="fixed bottom-4 right-4"
           asChild
