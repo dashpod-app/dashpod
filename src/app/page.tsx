@@ -43,8 +43,8 @@ export default function Home() {
       });
   };
   return (
-    <main className="h-screen w-screen flex flex-col gap-6 dark:bg-slate-800 bg-slate-200 items-center justify-center">
-      <div className="flex flex-col gap-2 min-w-[400px]">
+    <main className="h-[150vh] overflow-y-scroll w-screen flex flex-col gap-6 dark:bg-slate-800 bg-slate-200 items-center justify-center">
+      <div className="flex flex-col gap-2 p-2 max-w-[400px] h-2/3">
         <div className="py-4">
           <Image
             className="dark:block hidden"
