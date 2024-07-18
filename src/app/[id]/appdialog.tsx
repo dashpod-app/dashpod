@@ -236,6 +236,8 @@ function SearchFeedItems({
       >
         <div className="flex flex-col gap-2">
           <Input
+            // https://stackoverflow.com/a/7827300
+            tabIndex={-1}
             type="text"
             placeholder="Search for a podcast"
             onChange={onSearch}
