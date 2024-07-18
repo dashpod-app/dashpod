@@ -2,28 +2,11 @@
 import { parser } from "@/lib/parser";
 import { sql } from "@vercel/postgres";
 import { randomUUID } from "crypto";
-import { generate, count } from "random-words";
+import { generate } from "random-words";
 
 export default async function getFeed(url: string) {
   const feed = await parser.parseURL(url);
   return JSON.stringify(feed);
-}
-
-export async function getFeeds() {
-  const feedUrls = [
-    "https://feeds.npr.org/510289/podcast.xml",
-    "https://www.thisamericanlife.org/podcast/rss.xml",
-    "https://anchor.fm/s/f0b903e8/podcast/rss",
-    "https://feeds.simplecast.com/xl36XBC2",
-    "https://feeds.megaphone.fm/ADL8288293115",
-  ];
-  const feeds = await Promise.all(
-    feedUrls.map(async (url) => {
-      const feed = await parser.parseURL(url);
-      return feed;
-    })
-  );
-  return JSON.stringify(feeds);
 }
 
 async function getFeedTitle(url: string) {
