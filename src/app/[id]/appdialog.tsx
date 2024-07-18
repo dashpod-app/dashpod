@@ -110,6 +110,10 @@ function SortFeedItems({
   };
   const onDelete = (pod: Pod) => {
     removePodFromList(pod.id, listId).then(() => {
+      toast({
+        title: "Feed removed",
+        description: `${pod.name} was removed from your list`,
+      });
       refresh();
     });
   };
@@ -207,6 +211,10 @@ function SearchFeedItems({
   const onAddFeed = (feed: ItunesSearchResultPodcast) => {
     addPodcastToList(listId, feed.feedUrl)
       .then(() => {
+        toast({
+          title: "Feed added",
+          description: `${feed.collectionName} was added to your list`,
+        });
         refresh();
       })
       .catch((e) => {
