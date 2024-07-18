@@ -31,8 +31,11 @@ async function getFeedTitle(url: string) {
   return feed.title;
 }
 
-async function getFeedIdByName(name: string) {
+export async function getFeedIdByName(name: string) {
   const { rows } = await sql`SELECT * from LISTS where name=${name}`;
+  if (!rows || rows.length === 0) {
+    return null;
+  }
   return rows[0].id;
 }
 

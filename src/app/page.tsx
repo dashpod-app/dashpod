@@ -3,24 +3,44 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { createNewList } from "@/actions/getFeed";
+import { createNewList, getFeedIdByName } from "@/actions/getFeed";
 import Link from "next/link";
-import { Github } from "lucide-react";
 import Image from "next/image";
+import { toast } from "@/components/ui/use-toast";
+import ActionButton from "@/components/ActionButton";
 
 export default function Home() {
   const router = useRouter();
   const [listName, setListName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const onListInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setListName(e.target.value);
+    const listName = e.target.value.toLowerCase().trim();
+    setListName(listName);
   };
   const findList = () => {
-    router.push(`/${listName}`);
-  };
-  const onNewList = () => {
-    createNewList().then((list) => {
-      router.push(`/${list.name}`);
-    });
+    setIsLoading(true);
+    getFeedIdByName(listName)
+      .then((listId) => {
+        if (!listId) {
+          toast({
+            title: "List not found",
+            description: "The list you are looking for does not exist",
+            variant: "destructive",
+          });
+          return;
+        }
+        router.push(`/${listName}`);
+      })
+      .catch((e) => {
+        toast({
+          title: "Error",
+          description: e.message,
+          variant: "destructive",
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
   return (
     <main className="h-screen w-screen flex flex-col gap-6 dark:bg-slate-800 bg-slate-200 items-center justify-center">
@@ -32,6 +52,7 @@ export default function Home() {
             src="/white.png"
             width={400}
             height={400}
+            priority
           />
           <Image
             className="dark:hidden"
@@ -39,12 +60,13 @@ export default function Home() {
             src="/dark.png"
             width={400}
             height={400}
+            priority
           />
           <p className="text-lg dark:text-white text-center">
             A simple podcast player for your car
           </p>
         </div>
-        <Button onClick={onNewList}>Create a new list</Button>
+        <NewListButton />
         <div className="text-center font-light text-sm dark:text-white">or</div>
         <form
           onSubmit={(e) => {
@@ -58,9 +80,15 @@ export default function Home() {
               value={listName}
               onChange={onListInput}
             />
-            <Button variant="outline" onClick={findList}>
+            <ActionButton
+              isLoading={isLoading}
+              loaderVariant="secondary"
+              // @ts-ignore
+              variant="outline"
+              onClick={findList}
+            >
               Find list
-            </Button>
+            </ActionButton>
           </div>
         </form>
       </div>
@@ -85,5 +113,40 @@ export default function Home() {
         </Button>
       </Link>
     </main>
+  );
+}
+
+function NewListButton() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const onNewList = () => {
+    setIsLoading(true);
+    createNewList()
+      .then((list) => {
+        router.push(`/${list.name}`);
+        toast({
+          title: "List created",
+          description: "A new list has been created",
+        });
+      })
+      .catch((e) => {
+        toast({
+          title: "Error",
+          description: e.message,
+          variant: "destructive",
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+  return (
+    <ActionButton
+      isLoading={isLoading}
+      onClick={onNewList}
+      loaderVariant="secondary"
+    >
+      Create a new list
+    </ActionButton>
   );
 }

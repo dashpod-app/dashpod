@@ -25,9 +25,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ArrowDown, ArrowUp, Cog, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Cog, Loader, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 const Subtitle = ({ children }: { children: React.ReactNode }) => (
   <Label className="text-sm text-slate-600">{children}</Label>
@@ -188,16 +189,33 @@ function SearchFeedItems({
     undefined
   );
   const onSearchClick = () => {
+    setResults(undefined);
     setIsLoading(true);
-    searchPodItunes(search).then((res) => {
-      setResults(res);
-      setIsLoading(false);
-    });
+    searchPodItunes(search)
+      .then((res) => {
+        setResults(res);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        toast({
+          title: "Error searching",
+          description:
+            "We were unable to search for the feed. You can try again. If the problem persists, please open an issue on Github.",
+        });
+      });
   };
   const onAddFeed = (feed: ItunesSearchResultPodcast) => {
-    addPodcastToList(listId, feed.feedUrl).then(() => {
-      refresh();
-    });
+    addPodcastToList(listId, feed.feedUrl)
+      .then(() => {
+        refresh();
+      })
+      .catch((e) => {
+        toast({
+          title: "Error adding feed",
+          description: "There was an error adding the feed",
+          variant: "destructive",
+        });
+      });
   };
   return (
     <div className="flex flex-col gap-2">
@@ -227,6 +245,11 @@ function SearchFeedItems({
             Results
           </div>
           <div className="border-2 p-2 bg-slate-50 border-slate-100 rounded">
+            {results.results.length === 0 && (
+              <div className="text-center text-slate-900 tracking-tight">
+                0 results found
+              </div>
+            )}
             {results.results.map((result, idx) => (
               <div
                 key={idx}

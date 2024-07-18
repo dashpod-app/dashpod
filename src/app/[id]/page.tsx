@@ -1,7 +1,7 @@
 "use client";
 import { FeedItem } from "./feed";
-import getFeed, { getFeedsDb, getPodsDb } from "@/actions/getFeed";
-import { Suspense, useEffect, useState } from "react";
+import getFeed, { getPodsDb } from "@/actions/getFeed";
+import { useEffect, useState } from "react";
 import { Player } from "./player";
 import {
   ResizableHandle,
