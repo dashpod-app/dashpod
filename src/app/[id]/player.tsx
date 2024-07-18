@@ -46,6 +46,10 @@ export function Player({
       setIsLoading(true);
       console.log("Load start");
     });
+    audio.addEventListener("canplaythrough", () => {
+      setIsLoading(false);
+      console.log("Can play through");
+    });
     audio.addEventListener("timeupdate", () => {
       setCurrentTime(audio.currentTime);
     });
