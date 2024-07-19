@@ -85,7 +85,6 @@ export default function AppDialog({
                     Add a feed manually by entering the feed url
                   </SubSubtitle>
                 </TitleHeader>
-                <ArrowDown />
               </AccordionTrigger>
               <AccordionContent>
                 <AddFeedItem listId={listId} refresh={onClose} />
@@ -99,7 +98,6 @@ export default function AppDialog({
                     Remove podcasts or sort podcast order.
                   </SubSubtitle>
                 </TitleHeader>
-                <ArrowDown />
               </AccordionTrigger>
               <AccordionContent>
                 <SortFeedItems listId={listId} refresh={onClose} />

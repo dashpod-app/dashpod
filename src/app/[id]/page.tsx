@@ -9,9 +9,8 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, Cog } from "lucide-react";
+import { Cog } from "lucide-react";
 import AppDialog from "./appdialog";
-import { Action } from "@radix-ui/react-toast";
 import ActionButton from "@/components/ActionButton";
 
 export default function Home({ params }: { params: { id: string } }) {
