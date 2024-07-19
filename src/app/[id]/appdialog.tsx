@@ -12,26 +12,34 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { ArrowDown, ArrowUp, Cog, Loader, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Subtitle = ({ children }: { children: React.ReactNode }) => (
   <Label className="text-sm text-slate-600">{children}</Label>
+);
+const SubSubtitle = ({ children }: { children: React.ReactNode }) => (
+  <Label className="text-xs text-slate-500 tracking-tighter text-muted-foreground">
+    {children}
+  </Label>
+);
+
+const TitleHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full text-start flex flex-col gap-0.5">{children}</div>
 );
 
 export default function AppDialog({
@@ -63,23 +71,41 @@ export default function AppDialog({
         <DialogHeader>
           <DialogTitle>Edit settings</DialogTitle>
           <DialogDescription>
-            Make changes to your podcasts here. Click save when you are done.
+            Make changes to your Podcast list here.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
           <SearchFeedItems refresh={onClose} listId={listId} />
-          <Collapsible>
-            <CollapsibleTrigger>
-              <div className="w-full">
-                <Subtitle>Add manually</Subtitle>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <AddFeedItem listId={listId} refresh={onClose} />
-            </CollapsibleContent>
-          </Collapsible>
-          <Separator />
-          <SortFeedItems listId={listId} refresh={onClose} />
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger>
+                <TitleHeader>
+                  <Subtitle>Add manually</Subtitle>
+                  <SubSubtitle>
+                    Add a feed manually by entering the feed url
+                  </SubSubtitle>
+                </TitleHeader>
+                <ArrowDown />
+              </AccordionTrigger>
+              <AccordionContent>
+                <AddFeedItem listId={listId} refresh={onClose} />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger>
+                <TitleHeader>
+                  <Subtitle>Manage podcasts</Subtitle>
+                  <SubSubtitle>
+                    Remove podcasts or sort podcast order.
+                  </SubSubtitle>
+                </TitleHeader>
+                <ArrowDown />
+              </AccordionTrigger>
+              <AccordionContent>
+                <SortFeedItems listId={listId} refresh={onClose} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </DialogContent>
     </Dialog>
@@ -136,7 +162,6 @@ function SortFeedItems({
 
   return (
     <div className="flex flex-col gap-2">
-      <Subtitle>Sort feeds</Subtitle>
       {feeds
         .sort((a, b) => a.sort - b.sort)
         .map((pod) => (
@@ -227,7 +252,10 @@ function SearchFeedItems({
   };
   return (
     <div className="flex flex-col gap-2">
-      <Subtitle>Search feeds</Subtitle>
+      <TitleHeader>
+        <Subtitle>Search for podcasts</Subtitle>
+        <SubSubtitle>Search for any podcast by name or author</SubSubtitle>
+      </TitleHeader>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -256,7 +284,7 @@ function SearchFeedItems({
           </div>
           <div className="border-2 p-2 bg-slate-50 border-slate-100 rounded">
             {results.results.length === 0 && (
-              <div className="text-center text-slate-900 tracking-tight">
+              <div className="text-center text-sm text-slate-900 tracking-tight">
                 0 results found
               </div>
             )}

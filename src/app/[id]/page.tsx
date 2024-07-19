@@ -9,8 +9,10 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Cog } from "lucide-react";
 import AppDialog from "./appdialog";
+import { Action } from "@radix-ui/react-toast";
+import ActionButton from "@/components/ActionButton";
 
 export default function Home({ params }: { params: { id: string } }) {
   const [pods, setPods] = useState<any>();
@@ -47,49 +49,53 @@ export default function Home({ params }: { params: { id: string } }) {
     });
   };
   return (
-    <main className="h-screen w-screen flex flex-col gap-6 overflow-x-scroll dark:text-slate-300 dark:bg-slate-800 bg-slate-200">
-      <ResizablePanelGroup direction="vertical">
-        <ResizablePanel>
-          <div className="grid grid-cols-auto grid-flow-col	p-4 max-w-screen overflow-x-scroll justify-start">
-            {pods && pods.length === 0 && <NoFeedsComponent />}
-            {!pods && <PlaceHolderFeedItem />}
-            {pods &&
-              pods.map((pod: Pod, idx: number) => (
-                <FeedComponent
-                  title={pod.name || "Unknown"}
-                  pod={pod}
-                  key={`feed${idx}`}
-                  onClick={(item) => {
-                    playAudio(item.enclosure.url);
-                    setCurrentPodcast(item);
-                  }}
-                />
-              ))}
-            <div className="fixed top-2 right-2">
-              <AppDialog
-                listId={params.id}
-                refresh={onRefresh}
-                isOpen={isSettingsOpen}
-                setOpen={setIsSettingsOpen}
-              />
+    <main className="h-screen w-screen flex flex-col gap-6 overflow-x-scroll p-4 dark:text-slate-300 dark:bg-slate-800 bg-slate-200">
+      <div className="fixed top-2 right-2">
+        <AppDialog
+          listId={params.id}
+          refresh={onRefresh}
+          isOpen={isSettingsOpen}
+          setOpen={setIsSettingsOpen}
+        />
+      </div>
+      {pods && pods.length === 0 && (
+        <NoFeedsComponent setIsSettingsOpen={setIsSettingsOpen} />
+      )}
+      {pods?.length != 0 && (
+        <ResizablePanelGroup direction="vertical">
+          <ResizablePanel>
+            <div className="grid grid-cols-auto grid-flow-col max-w-screen overflow-x-scroll justify-start">
+              {!pods && <PlaceHolderFeedItem />}
+              {pods &&
+                pods.map((pod: Pod, idx: number) => (
+                  <FeedComponent
+                    title={pod.name || "Unknown"}
+                    pod={pod}
+                    key={`feed${idx}`}
+                    onClick={(item) => {
+                      playAudio(item.enclosure.url);
+                      setCurrentPodcast(item);
+                    }}
+                  />
+                ))}
             </div>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-        {currentPodcast && (
-          <ResizablePanel defaultSize={20}>
-            <Player
-              key={currentPodcast?.guid}
-              audio={audio}
-              playing={playing}
-              setPlaying={setPlaying}
-              currentPodcast={currentPodcast}
-              clearCurrent={() => setCurrentPodcast(null)}
-            />
           </ResizablePanel>
-        )}
-      </ResizablePanelGroup>
+
+          <ResizableHandle withHandle />
+          {currentPodcast && (
+            <ResizablePanel defaultSize={20}>
+              <Player
+                key={currentPodcast?.guid}
+                audio={audio}
+                playing={playing}
+                setPlaying={setPlaying}
+                currentPodcast={currentPodcast}
+                clearCurrent={() => setCurrentPodcast(null)}
+              />
+            </ResizablePanel>
+          )}
+        </ResizablePanelGroup>
+      )}
     </main>
   );
 }
@@ -128,12 +134,27 @@ function FeedComponent({
     </div>
   );
 }
-function NoFeedsComponent() {
+function NoFeedsComponent({
+  setIsSettingsOpen,
+}: {
+  setIsSettingsOpen: (val: boolean) => void;
+}) {
   return (
-    <div className="w-full bg-white dark:bg-slate-950  rounded-lg p-3 mr-2 shadow-xl">
-      <div className="text-2xl font-semibold tracking-tight">
-        No feeds found. Add a feed to get started{" "}
-        <ArrowRight className="inline" />
+    <div className=" h-screen bg-white dark:bg-slate-950 w-[500px] rounded-lg p-3 mr-2">
+      <div className="text-2xl font-semibold tracking-tight flex flex-col gap-4">
+        <p>No Podcasts added.</p>
+        <p className="text-xl font-medium">Add a podcast to get started.</p>
+        <div className="text-lg font-normal tracking-tight">
+          Click the button below to open settings and search and add Podcasts.
+        </div>
+        <ActionButton onClick={() => setIsSettingsOpen(true)}>
+          Open settings <Cog size={24} className="ml-2" />
+        </ActionButton>
+        <p className="text-sm font-normal">
+          To add more podcasts or change settings in the future, open settings
+          by clicking the settings <Cog className="inline" /> icon in the top
+          right corner.
+        </p>
       </div>
     </div>
   );
