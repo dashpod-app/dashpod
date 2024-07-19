@@ -118,7 +118,7 @@ export function Player({
   if (!audio || !currentPodcast) return null;
   return (
     <div className="w-full flex h-full gap-4 flex-row items-center p-2 bg-white dark:bg-slate-900 opacity-[98%]">
-      <div className="flex flex-col items-center justify-between gap-2 h-full xl:w-1/4">
+      <div className="flex flex-col items-center justify-between gap-2 h-full 2xl:w-1/4">
         <Button onClick={onTogglePlay} className="w-full h-full">
           {!isLoading ? (
             playing ? (
@@ -139,11 +139,11 @@ export function Player({
           </Button>
         </div>
       </div>
-      <div className="w-full flex flex-col gap-3">
-        <div className="xl:text-3xl text-lg tracking-tight">
+      <div className="w-full flex flex-col 2xl:gap-3 gap-1">
+        <div className="2xl:text-3xl text-lg tracking-tight">
           {currentPodcast.title}
         </div>
-        <div className="text-sm xl:text-lg tracking-tight">
+        <div className="text-sm 2xl:text-lg tracking-tight">
           {formatDate(currentPodcast.pubDate)}
         </div>
         <Slider
@@ -153,7 +153,7 @@ export function Player({
           max={100}
           step={0.1}
         />
-        <div className="flex flex-row justify-between text-sm xl:text-lg">
+        <div className="flex flex-row justify-between text-sm 2xl:text-lg">
           <p>{formatElapsed(audio.currentTime)}</p>
           <p>{formatElapsed(audio.duration) || ""}</p>
         </div>
