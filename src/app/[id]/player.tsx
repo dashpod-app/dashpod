@@ -31,6 +31,10 @@ export function Player({
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [seek, setSeek] = useState<number[]>();
   const [isLoading, setIsLoading] = useState(false);
+  // wantToPlay tracks what the user has commanded. This is necessary because
+  // the audio element may not be ready to play immediately after the user
+  // clicks play.
+  const [wantToPlay, setWantToPlay] = useState(false);
   useEffect(() => {
     if (!audio) return;
     audio.addEventListener("playing", () => {
@@ -48,6 +52,9 @@ export function Player({
     });
     audio.addEventListener("canplaythrough", () => {
       setIsLoading(false);
+      if (wantToPlay) {
+        audio.play();
+      }
       console.log("Can play through");
     });
     audio.addEventListener("timeupdate", () => {
@@ -88,7 +95,9 @@ export function Player({
     if (!audio) return;
     if (playing) {
       audio.pause();
+      setWantToPlay(false);
     } else {
+      setWantToPlay(true);
       audio.play();
     }
   };
@@ -108,8 +117,8 @@ export function Player({
   };
   if (!audio || !currentPodcast) return null;
   return (
-    <div className="w-full flex h-full gap-4 flex-row items-center p-2 bg-white dark:bg-slate-700 opacity-[98%]">
-      <div className="flex flex-col items-center justify-between gap-2 h-full">
+    <div className="w-full flex h-full gap-4 flex-row items-center p-2 bg-white dark:bg-slate-900 opacity-[98%]">
+      <div className="flex flex-col items-center justify-between gap-2 h-full xl:w-1/4">
         <Button onClick={onTogglePlay} className="w-full h-full">
           {!isLoading ? (
             playing ? (
@@ -121,18 +130,20 @@ export function Player({
             <Loader size={36} className="animate animate-spin" />
           )}
         </Button>
-        <div className="flex flex-row gap-1 h-full">
-          <Button onClick={seekBackward} size={"lg"} className="h-full ">
-            <StepBack size={24} />
+        <div className="flex flex-row gap-1 w-full h-full">
+          <Button onClick={seekBackward} className="h-full w-full">
+            <StepBack size={30} />
           </Button>
-          <Button onClick={seekForward} size="lg" className="h-full">
-            <StepForward size={24} />
+          <Button onClick={seekForward} size="lg" className="w-full h-full">
+            <StepForward size={30} />
           </Button>
         </div>
       </div>
-      <div className="w-full">
-        <div className="text-lg tracking-tight">{currentPodcast.title}</div>
-        <div className="text-sm tracking-tight">
+      <div className="w-full flex flex-col gap-3">
+        <div className="xl:text-3xl text-lg tracking-tight">
+          {currentPodcast.title}
+        </div>
+        <div className="text-sm xl:text-lg tracking-tight">
           {formatDate(currentPodcast.pubDate)}
         </div>
         <Slider
@@ -142,7 +153,7 @@ export function Player({
           max={100}
           step={0.1}
         />
-        <div className="flex flex-row justify-between text-sm">
+        <div className="flex flex-row justify-between text-sm xl:text-lg">
           <p>{formatElapsed(audio.currentTime)}</p>
           <p>{formatElapsed(audio.duration) || ""}</p>
         </div>
