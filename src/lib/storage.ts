@@ -3,11 +3,7 @@ export function writeToLocalStorage(key: string, value: string) {
 }
 
 export function readFromLocalStorage(key: string) {
-  const value = localStorage.getItem(key);
-  if (value === null) {
-    return null;
-  }
-  return value;
+  return localStorage.getItem(key);
 }
 
 export function removeFromLocalStorage(key: string) {
@@ -24,7 +20,6 @@ export function writeProgressToLocalStorage(episodeId: string, value: number) {
 
 export function readProgressFromLocalStorage(episodeId: string) {
   const value = readFromLocalStorage(episodeId);
-  console.log("Value", value);
   if (value === null) {
     return 0;
   }
