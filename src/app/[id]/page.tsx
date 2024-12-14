@@ -12,13 +12,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Cog } from "lucide-react";
 import AppDialog from "./appdialog";
 import ActionButton from "@/components/ActionButton";
+import {
+  readLastPlayedFromLocalStorage,
+  writeLastPlayedToLocalStorage,
+} from "@/lib/storage";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const [pods, setPods] = useState<any>();
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [currentPodcast, setCurrentPodcast] = useState<any>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [playing, setPlaying] = useState(false);
   const { id } = use(params);
 
   useEffect(() => {
@@ -26,26 +28,20 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
       setPods(pods);
     });
   }, [id]);
+  // Continue from last played
+  useEffect(() => {
+    const lastPlayed = readLastPlayedFromLocalStorage();
+    if (lastPlayed && pods) {
+      const feedUrl = pods.find((pod: Pod) => pod.id === lastPlayed)?.url;
+      console.log("Last played", lastPlayed, feedUrl, pods);
+    }
+  }, [pods, id]);
   const onRefresh = () => {
     return new Promise<null>((resolve) => {
       getPodsDb(id).then((pods) => {
         setPods(pods);
         resolve(null);
       });
-    });
-  };
-  const playAudio = (url: string) => {
-    if (audio) audio.pause();
-    const newAudio = new Audio(url);
-    setAudio(newAudio);
-    newAudio.play();
-    newAudio.addEventListener("playing", () => {
-      setPlaying(true);
-      console.log("Playing");
-    });
-    newAudio.addEventListener("pause", () => {
-      setPlaying(false);
-      console.log("Paused");
     });
   };
   return (
@@ -73,7 +69,10 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
                     pod={pod}
                     key={`feed${idx}`}
                     onClick={(item) => {
-                      playAudio(item.enclosure.url);
+                      setCurrentPodcast(item);
+                      writeLastPlayedToLocalStorage(item.guid);
+                    }}
+                    onResume={(item) => {
                       setCurrentPodcast(item);
                     }}
                   />
@@ -84,14 +83,7 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
           <ResizableHandle withHandle />
           {currentPodcast && (
             <ResizablePanel defaultSize={20}>
-              <Player
-                key={currentPodcast?.guid}
-                audio={audio}
-                playing={playing}
-                setPlaying={setPlaying}
-                currentPodcast={currentPodcast}
-                clearCurrent={() => setCurrentPodcast(null)}
-              />
+              <Player wantToPlay={currentPodcast} />
             </ResizablePanel>
           )}
         </ResizablePanelGroup>
@@ -103,12 +95,23 @@ function FeedComponent({
   title,
   pod,
   onClick,
+  onResume,
 }: {
   title: string;
   pod: Pod;
   onClick: (item: any) => void;
+  onResume: (item: any) => void;
 }) {
   const [data, setData] = useState<any>();
+  const isLastPlayed = data?.items.find(
+    (a: any) => a.guid === readLastPlayedFromLocalStorage()
+  );
+
+  useEffect(() => {
+    if (isLastPlayed) {
+      onResume(isLastPlayed);
+    }
+  }, [isLastPlayed]);
 
   useEffect(() => {
     getFeed(pod.url).then((data) => {

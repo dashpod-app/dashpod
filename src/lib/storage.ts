@@ -25,3 +25,11 @@ export function readProgressFromLocalStorage(episodeId: string) {
   }
   return parseInt(value);
 }
+
+export function writeLastPlayedToLocalStorage(episodeId: string) {
+  writeToLocalStorage("lastPlayed", episodeId);
+}
+
+export function readLastPlayedFromLocalStorage() {
+  return readFromLocalStorage("lastPlayed");
+}

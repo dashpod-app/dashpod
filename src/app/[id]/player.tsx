@@ -15,36 +15,62 @@ import {
   writeProgressToLocalStorage,
 } from "@/lib/storage";
 
-export function Player({
-  audio,
-  playing,
-  setPlaying,
-  currentPodcast,
-  clearCurrent,
-}: {
-  audio: HTMLAudioElement | null;
-  playing: boolean;
-  setPlaying: (playing: boolean) => void;
-  currentPodcast: any;
-  clearCurrent: () => void;
-}) {
+export function Player({ wantToPlay }: { wantToPlay: any }) {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [seek, setSeek] = useState<number[]>();
   const [isLoading, setIsLoading] = useState(false);
-  // wantToPlay tracks what the user has commanded. This is necessary because
-  // the audio element may not be ready to play immediately after the user
-  // clicks play.
-  const [wantToPlay, setWantToPlay] = useState(false);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [playState, setPlayState] = useState<"playing" | "paused" | "error">(
+    "paused"
+  );
+
+  useEffect(() => {
+    // Tracks what user wants to play
+    if (!wantToPlay) return;
+    console.log("Want to play", wantToPlay);
+    pause();
+    setPlayState("paused");
+    play(wantToPlay.enclosure.url);
+  }, [wantToPlay?.guid, audio]);
+
+  const pause = () => {
+    if (!audio) return;
+    audio.pause();
+  };
+
+  const play = (url: string) => {
+    console.log("Playing", url, audio);
+    if (!audio) return;
+    audio.src = url;
+    audio
+      .play()
+      .then(() => {
+        setPlayState("playing");
+      })
+      .catch((e) => {
+        console.error(e);
+        setPlayState("error");
+      });
+  };
+
+  useEffect(() => {
+    const audio = new Audio();
+    setAudio(audio);
+    return () => {
+      audio.pause();
+    };
+  }, []);
+
   useEffect(() => {
     if (!audio) return;
     audio.addEventListener("playing", () => {
       setIsLoading(false);
       console.log("Playing");
-      setPlaying(true);
+      setPlayState("playing");
     });
     audio.addEventListener("pause", () => {
       console.log("Paused");
-      setPlaying(false);
+      setPlayState("paused");
     });
     audio.addEventListener("loadstart", () => {
       setIsLoading(true);
@@ -52,8 +78,15 @@ export function Player({
     });
     audio.addEventListener("canplaythrough", () => {
       setIsLoading(false);
-      if (wantToPlay) {
-        audio.play();
+      console.log("Can play through, playing", audio, wantToPlay);
+      if (wantToPlay && audio) {
+        audio
+          .play()
+          .then(() => setPlayState("playing"))
+          .catch((e) => {
+            console.error(e);
+            setPlayState("error");
+          });
       }
       console.log("Can play through");
     });
@@ -62,43 +95,38 @@ export function Player({
     });
     return () => {
       audio.removeEventListener("playing", () => {
-        setPlaying(true);
+        setPlayState("playing");
       });
       audio.removeEventListener("pause", () => {
-        setPlaying(false);
+        setPlayState("paused");
       });
     };
-  }, [audio, setPlaying]);
+  }, [audio, playState]);
   useEffect(() => {
-    const progress = readProgressFromLocalStorage(currentPodcast?.guid);
+    const progress = readProgressFromLocalStorage(wantToPlay?.guid);
     if (audio && progress > 0) {
       audio.currentTime = progress;
     }
-  }, [currentPodcast]);
+  }, [wantToPlay?.guid, audio]);
 
   const getProgress = () => {
-    if (!audio || !currentPodcast) return 0;
+    if (!audio || !wantToPlay) return 0;
     // write every 5 seconds (debounce)
     if (Math.floor(currentTime) % 5 === 0 && currentTime > 0) {
-      writeProgressToLocalStorage(currentPodcast.guid, currentTime);
+      writeProgressToLocalStorage(wantToPlay.guid, currentTime);
     }
     return (audio.currentTime / audio.duration) * 100;
   };
-  const clearAudio = () => {
-    if (audio) {
-      audio.pause();
-      setPlaying(false);
-    }
-    clearCurrent();
-  };
-  const onTogglePlay = () => {
+  const onTogglePlay = async () => {
     if (!audio) return;
-    if (playing) {
+    if (playState === "playing") {
+      console.log("Pausing");
       audio.pause();
-      setWantToPlay(false);
+      //setWantToPlay(false);
     } else {
-      setWantToPlay(true);
-      audio.play();
+      console.log("Playing");
+      //setWantToPlay(true);
+      await audio.play();
     }
   };
   useEffect(() => {
@@ -115,13 +143,13 @@ export function Player({
     if (!audio) return;
     audio.currentTime -= 10;
   };
-  if (!audio || !currentPodcast) return null;
+  if (!wantToPlay) return null;
   return (
     <div className="w-full flex h-full gap-4 flex-row items-center p-2 bg-white dark:bg-slate-900 opacity-[98%]">
       <div className="flex flex-col items-center justify-between gap-2 h-full 2xl:w-1/4">
         <Button onClick={onTogglePlay} className="w-full h-full">
           {!isLoading ? (
-            playing ? (
+            playState === "playing" ? (
               <PauseIcon size={36} />
             ) : (
               <PlayIcon size={36} />
@@ -141,10 +169,10 @@ export function Player({
       </div>
       <div className="w-full flex flex-col 2xl:gap-3 gap-1">
         <div className="2xl:text-3xl text-lg tracking-tight">
-          {currentPodcast.title}
+          {wantToPlay.title}
         </div>
         <div className="text-sm 2xl:text-lg tracking-tight">
-          {formatDate(currentPodcast.pubDate)}
+          {formatDate(wantToPlay.pubDate)}
         </div>
         <Slider
           className="py-2"
@@ -154,8 +182,8 @@ export function Player({
           step={0.1}
         />
         <div className="flex flex-row justify-between text-sm 2xl:text-lg">
-          <p>{formatElapsed(audio.currentTime)}</p>
-          <p>{formatElapsed(audio.duration) || ""}</p>
+          <p>{formatElapsed(audio?.currentTime)}</p>
+          <p>{formatElapsed(audio?.duration) || ""}</p>
         </div>
       </div>
     </div>
