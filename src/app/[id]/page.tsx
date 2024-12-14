@@ -1,7 +1,7 @@
 "use client";
 import { FeedItem } from "./feed";
 import getFeed, { getPodsDb } from "@/actions/getFeed";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Player } from "./player";
 import {
   ResizableHandle,
@@ -13,21 +13,22 @@ import { Cog } from "lucide-react";
 import AppDialog from "./appdialog";
 import ActionButton from "@/components/ActionButton";
 
-export default function Home({ params }: { params: { id: string } }) {
+export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const [pods, setPods] = useState<any>();
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [currentPodcast, setCurrentPodcast] = useState<any>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const { id } = use(params);
 
   useEffect(() => {
-    getPodsDb(params.id).then((pods) => {
+    getPodsDb(id).then((pods) => {
       setPods(pods);
     });
-  }, [params.id]);
+  }, [id]);
   const onRefresh = () => {
     return new Promise<null>((resolve) => {
-      getPodsDb(params.id).then((pods) => {
+      getPodsDb(id).then((pods) => {
         setPods(pods);
         resolve(null);
       });
@@ -51,7 +52,7 @@ export default function Home({ params }: { params: { id: string } }) {
     <main className="h-screen w-screen flex flex-col gap-6 overflow-x-scroll p-4 dark:text-slate-300 dark:bg-slate-800 bg-slate-200">
       <div className="fixed top-2 right-2">
         <AppDialog
-          listId={params.id}
+          listId={id}
           refresh={onRefresh}
           isOpen={isSettingsOpen}
           setOpen={setIsSettingsOpen}
