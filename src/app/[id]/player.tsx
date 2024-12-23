@@ -1,3 +1,4 @@
+"use client";
 import { formatDate, formatElapsed } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import {
@@ -27,7 +28,7 @@ export function Player({ wantToPlay }: { wantToPlay: any }) {
   useEffect(() => {
     // Tracks what user wants to play
     if (!wantToPlay) return;
-    console.log("Want to play", wantToPlay);
+    document.title = `${wantToPlay.title} | Dashpod`;
     pause();
     setPlayState("paused");
     play(wantToPlay.enclosure.url);
@@ -39,9 +40,9 @@ export function Player({ wantToPlay }: { wantToPlay: any }) {
   };
 
   const play = (url: string) => {
-    console.log("Playing", url, audio);
     if (!audio) return;
     audio.src = url;
+    audio.currentTime = 0;
     audio
       .play()
       .then(() => {
@@ -65,20 +66,16 @@ export function Player({ wantToPlay }: { wantToPlay: any }) {
     if (!audio) return;
     audio.addEventListener("playing", () => {
       setIsLoading(false);
-      console.log("Playing");
       setPlayState("playing");
     });
     audio.addEventListener("pause", () => {
-      console.log("Paused");
       setPlayState("paused");
     });
     audio.addEventListener("loadstart", () => {
       setIsLoading(true);
-      console.log("Load start");
     });
     audio.addEventListener("canplaythrough", () => {
       setIsLoading(false);
-      console.log("Can play through, playing", audio, wantToPlay);
       if (wantToPlay && audio) {
         audio
           .play()
@@ -88,7 +85,6 @@ export function Player({ wantToPlay }: { wantToPlay: any }) {
             setPlayState("error");
           });
       }
-      console.log("Can play through");
     });
     audio.addEventListener("timeupdate", () => {
       setCurrentTime(audio.currentTime);
@@ -120,12 +116,8 @@ export function Player({ wantToPlay }: { wantToPlay: any }) {
   const onTogglePlay = async () => {
     if (!audio) return;
     if (playState === "playing") {
-      console.log("Pausing");
       audio.pause();
-      //setWantToPlay(false);
     } else {
-      console.log("Playing");
-      //setWantToPlay(true);
       await audio.play();
     }
   };
